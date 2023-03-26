@@ -1,10 +1,12 @@
 import tkinter as tk
+import tkintermapview
 
 
 class Application:
     def __init__(self, window):
         self.window = window
         self.window.title("User Interface Missão Guará - Fênix UFMG")
+        self.window.iconbitmap("logo.ico")
 
         largura = 1280
         altura = 720
@@ -27,12 +29,16 @@ class Application:
                                width=self.window.winfo_width() / 2)
 
         # Adiciona os widgets aos frames
-        tk.Label(self.frame1, text="Frame 1", font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame2, text="Frame 2", font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame3, text="Frame 3", font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame4, text="Frame 4", font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame5, text="Frame 5", font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame6, text="Frame 6", font=('Arial', 16)).pack(pady=20)
+        tk.Label(self.frame1, text="Acelerômetro",
+                 font=('Arial', 16)).pack(pady=20)
+        tk.Label(self.frame2, text="Giroscópio",
+                 font=('Arial', 16)).pack(pady=20)
+        tk.Label(self.frame3, text="Altímetro",
+                 font=('Arial', 16)).pack(pady=20)
+        tk.Label(self.frame4, text="Velocímetro",
+                 font=('Arial', 16)).pack(pady=20)
+        tk.Label(self.frame5, text="Botões", font=('Arial', 16)).pack(pady=20)
+        # tk.Label(self.frame6, text="Mapa GPS", font=('Arial', 16)).pack(pady=20)
 
         # Define a posição dos frames no grid
         self.frame1.grid(row=0, column=0, sticky='nsew')
@@ -51,6 +57,15 @@ class Application:
         self.window.rowconfigure(0, weight=1)
         self.window.rowconfigure(1, weight=1)
         self.window.rowconfigure(2, weight=1)
+
+        map_widget = tkintermapview.TkinterMapView(
+            self.frame6, width=400, height=1280)
+        map_widget.set_position(-19.9166813, -43.9344931)
+        map_widget.pack(fill='both', expand=True)
+        self.frame6.columnconfigure(0, weight=1)
+        self.frame6.rowconfigure(0, weight=1)
+
+        map_widget.set_zoom(16)
 
 
 # Cria a janela
