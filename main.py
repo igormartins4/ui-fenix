@@ -1,8 +1,13 @@
 import tkinter as tk
 import tkintermapview
+import requests
+import json
+
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 
-class Application:
+class Application():
     def __init__(self, window):
         self.window = window
         self.window.title("User Interface Missão Guará - Fênix UFMG")
@@ -25,20 +30,21 @@ class Application:
         self.frame3 = tk.Frame(self.window, bg='blue')
         self.frame4 = tk.Frame(self.window, bg='yellow')
         self.frame5 = tk.Frame(self.window, bg='orange')
-        self.frame6 = tk.Frame(self.window, bg='purple',
-                               width=self.window.winfo_width() / 2)
+        self.frame6 = tk.Frame(self.window, bg='purple')
 
         # Adiciona os widgets aos frames
         tk.Label(self.frame1, text="Acelerômetro",
                  font=('Arial', 16)).pack(pady=20)
         tk.Label(self.frame2, text="Giroscópio",
                  font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame3, text="Altímetro",
-                 font=('Arial', 16)).pack(pady=20)
+        # tk.Label(self.frame3, text="Altímetro", font=('Arial', 10)).pack(pady=5)
         tk.Label(self.frame4, text="Velocímetro",
                  font=('Arial', 16)).pack(pady=20)
         tk.Label(self.frame5, text="Botões", font=('Arial', 16)).pack(pady=20)
         # tk.Label(self.frame6, text="Mapa GPS", font=('Arial', 16)).pack(pady=20)
+
+        # Chama a função showAltitude para exibir o gráfico no Frame 3
+        self.showAltitude()
 
         # Define a posição dos frames no grid
         self.frame1.grid(row=0, column=0, sticky='nsew')
@@ -58,8 +64,28 @@ class Application:
         self.window.rowconfigure(1, weight=1)
         self.window.rowconfigure(2, weight=1)
 
-        # Chama a função de exibir o mapa passando a latitude e longitude
-        self.showMap(-19.9166813, -43.9344931)
+        self.latitude = None
+        self.longitude = None
+        self.intervalo = 2  # atualiza a cada 2 segundos
+
+        self.atualizar_posicao()  # chama o método para atualizar a posição
+
+    # Função que mostra onde está a ISS, apenas para efeitos visuais
+    def atualizar_posicao(self):
+        response = requests.get('http://api.open-notify.org/iss-now.json')
+        data = json.loads(response.content)
+        self.latitude = float(data['iss_position']['latitude'])
+        self.longitude = float(data['iss_position']['longitude'])
+
+        # remove o mapa antigo
+        for widget in self.frame6.winfo_children():
+            widget.destroy()
+
+        # cria um novo mapa com as novas coordenadas
+        self.showMap(self.latitude, self.longitude)
+
+        # chama novamente a função atualizar_posicao() após 5 segundos
+        self.window.after(self.intervalo * 1000, self.atualizar_posicao)
 
     # Função que exibe o mapa na tela
     def showMap(self, latitude, longitude):
@@ -70,7 +96,29 @@ class Application:
         self.frame6.columnconfigure(0, weight=1)
         self.frame6.rowconfigure(0, weight=1)
 
-        map_widget.set_zoom(16)
+        map_widget.set_zoom(10)
+
+    def showAltitude(self):
+        altura = [10, 200, 300, 400]
+        tempo = [1, 20, 90, 160]
+
+        # Cria um objeto Figure do Matplotlib
+        fig = Figure(figsize=(1, 1), dpi=100)
+        fig.suptitle('Altímetro')
+
+        # Adiciona um subplot ao objeto Figure
+        ax = fig.add_subplot(1, 1, 1)
+
+        # Plota um gráfico de linha simples
+        ax.plot(altura, tempo)
+
+        ax.set_xlabel('Tempo em segundos')
+        ax.set_ylabel('Altura em metros')
+
+        # Cria um widget FigureCanvasTkAgg
+        canvas = FigureCanvasTkAgg(fig, master=self.frame3)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side='top', fill='both', expand=True)
 
 
 # Cria a janela
