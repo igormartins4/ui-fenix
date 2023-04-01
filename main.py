@@ -58,9 +58,14 @@ class Application:
         self.window.rowconfigure(1, weight=1)
         self.window.rowconfigure(2, weight=1)
 
+        # Chama a função de exibir o mapa passando a latitude e longitude
+        self.showMap(-19.9166813, -43.9344931)
+
+    # Função que exibe o mapa na tela
+    def showMap(self, latitude, longitude):
         map_widget = tkintermapview.TkinterMapView(
             self.frame6, width=400, height=1280)
-        map_widget.set_position(-19.9166813, -43.9344931)
+        map_widget.set_position(latitude, longitude)
         map_widget.pack(fill='both', expand=True)
         self.frame6.columnconfigure(0, weight=1)
         self.frame6.rowconfigure(0, weight=1)
