@@ -119,6 +119,28 @@ class Application():
         canvas = FigureCanvasTkAgg(fig, master=self.frame3)
         canvas.draw()
         canvas.get_tk_widget().pack(side='top', fill='both', expand=True)
+        
+        # Gráfico para o Giroscópio
+        altura_giroscopio = [100, 200, 300, 400, 500]
+        tempo_giroscopio = [1, 20, 40, 80, 160]
+
+        # Cria um objeto Figure do Matplotlib
+        fig = Figure(figsize=(1, 1), dpi=100)
+        fig.suptitle('Giroscopio')
+
+        # Adiciona um subplot ao objeto Figure
+        ax = fig.add_subplot(1, 1, 1)
+
+        # Plota um gráfico de linha simples
+        ax.plot(altura_giroscopio, tempo_giroscopio)
+
+        ax.set_xlabel('Tempo em segundos')
+        ax.set_ylabel('Altura em metros')
+
+        # Cria um widget FigureCanvasTkAgg
+        canvas = FigureCanvasTkAgg(fig, master=self.frame2)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side='top', fill='both', expand=True)
 
 
 # Cria a janela
