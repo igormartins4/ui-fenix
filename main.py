@@ -1,153 +1,177 @@
-import tkinter as tk
+from tkinter import *
+
 import tkintermapview
 import requests
 import json
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+import numpy as np
+
+import datetime
 
 
-class Application():
-    def __init__(self, window):
-        self.window = window
-        self.window.title("User Interface Missão Guará - Fênix UFMG")
-        self.window.iconbitmap("logo.ico")
+def getData():
 
-        largura = 1280
-        altura = 720
+    # URL da API
+    url = "https://api.wheretheiss.at/v1/satellites/25544"
 
-        # define o tamanho da janela com as dimensões da tela
-        window.geometry("%dx%d+0+0" % (largura, altura))
+    try:
+        # Faz a solicitação GET para a API
+        response = requests.get(url)
 
-        # Define o grid
-        self.window.columnconfigure(0, weight=1)
-        self.window.rowconfigure(0, weight=1)
-        self.window.rowconfigure(1, weight=1)
+        # Verifica se a resposta foi bem-sucedida (código de status 200)
+        if response.status_code == 200:
+            # Retorna os dados JSON da resposta
+            return response.json()
+        else:
+            print("Erro na solicitação da API:", response.status_code)
 
-        # Cria os frames
-        self.frame1 = tk.Frame(self.window, bg='red')
-        self.frame2 = tk.Frame(self.window, bg='green')
-        self.frame3 = tk.Frame(self.window, bg='blue')
-        self.frame4 = tk.Frame(self.window, bg='yellow')
-        self.frame5 = tk.Frame(self.window, bg='orange')
-        self.frame6 = tk.Frame(self.window, bg='purple')
+    except requests.exceptions.RequestException as e:
+        print("Ocorreu um erro ao obter dados:", e)
 
-        # Adiciona os widgets aos frames
-        tk.Label(self.frame1, text="Acelerômetro",
-                 font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame2, text="Giroscópio",
-                 font=('Arial', 16)).pack(pady=20)
-        # tk.Label(self.frame3, text="Altímetro", font=('Arial', 10)).pack(pady=5)
-        tk.Label(self.frame4, text="Velocímetro",
-                 font=('Arial', 16)).pack(pady=20)
-        tk.Label(self.frame5, text="Botões", font=('Arial', 16)).pack(pady=20)
-        # tk.Label(self.frame6, text="Mapa GPS", font=('Arial', 16)).pack(pady=20)
 
-        # Chama a função showAltitude para exibir o gráfico no Frame 3
-        self.showAltitude()
+data = getData()
 
-        # Define a posição dos frames no grid
-        self.frame1.grid(row=0, column=0, sticky='nsew')
-        self.frame2.grid(row=0, column=1, sticky='nsew')
-        self.frame3.grid(row=1, column=0, sticky='nsew')
-        self.frame4.grid(row=1, column=1, sticky='nsew')
-        self.frame5.grid(row=2, column=0, sticky='nsew', columnspan=2)
-        self.frame6.grid(column=2, row=0, sticky='nsew',
-                         columnspan=1, rowspan=3)
+window = Tk()
+window.title("User Interface Missão Guará - Fênix UFMG")
+window.iconbitmap("logo.ico")
 
-        # Define a proporção das colunas e linhas
-        self.window.columnconfigure(0, weight=1)
-        self.window.columnconfigure(1, weight=1)
-        self.window.columnconfigure(2, weight=2)
 
-        self.window.rowconfigure(0, weight=1)
-        self.window.rowconfigure(1, weight=1)
-        self.window.rowconfigure(2, weight=1)
+# Configurar as colunas e linhas da janela para expansão
+window.columnconfigure(0, weight=1)
+window.columnconfigure(1, weight=1)
+window.rowconfigure(0, weight=1)
+window.rowconfigure(1, weight=1)
+window.rowconfigure(2, weight=1)
 
-        self.latitude = None
-        self.longitude = None
-        self.intervalo = 2  # atualiza a cada 2 segundos
 
-        self.atualizar_posicao()  # chama o método para atualizar a posição
+def showAccelerometer():
+    accelerometerLabelFrame = LabelFrame(window, text="Acelerômetro")
+    accelerometerLabelFrame.grid(
+        row=0, column=0, padx=10, pady=10, sticky='nsew')
+    accelerometer = Label(accelerometerLabelFrame, text="Conteúdo")
+    accelerometer.pack(fill='both', expand='yes')
+
+
+def showAltimeter():
+    speedometerLabelFrame = LabelFrame(window, text="Altímetro")
+    speedometerLabelFrame.grid(
+        row=0, column=1, padx=10, pady=10, sticky='nsew')
+
+    # Criação do canvas para o gráfico
+    fig, ax = plt.subplots()
+    canvas = FigureCanvasTkAgg(fig, master=speedometerLabelFrame)
+    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
+
+    # Listas para armazenar os dados de altitude e timestamp
+    altitudes = []
+    timestamps = []
+
+    def calcular_tempo_execucao():
+        segundos = datetime.datetime.now()
+        return segundos
+
+    # Função para atualizar o gráfico
+    def update_graph():
+
+        nonlocal altitudes, timestamps  # Usa variáveis não locais
+
+        # Obtém os dados de altitude e timestamp
+        data = getData()
+        altitude = float(data['altitude']) * 1000
+        timestamp = calcular_tempo_execucao()
+
+        # Adiciona os dados às listas
+        altitudes.append(altitude)
+        timestamps.append(timestamp)
+
+        # Atualiza os dados no gráfico
+        ax.clear()
+        ax.plot(timestamps, altitudes)
+        ax.set_xlabel('Tempo (em segundos)')
+        ax.set_ylabel('Altitude (em metros)')
+        ax.set_title('Gráfico de Altitude em Tempo Real')
+
+        # Redesenha o gráfico
+        canvas.draw()
+
+        # Chama a função para atualizar o gráfico após intervalo de tempo
+        window.after(2000, update_graph)  # Chama novamente após 2 segundos
+
+    # Chama a função para atualizar o gráfico após a definição
+    update_graph()
+
+
+def showGyroscope():
+    gyroscopeLabelFrame = LabelFrame(window, text="Giroscópio")
+    gyroscopeLabelFrame.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
+    gyroscope = Label(gyroscopeLabelFrame, text="Conteúdo")
+    gyroscope.pack(fill='both', expand='yes')
+
+
+def showSpeedometer():
+    speedometerLabelFrame = LabelFrame(window, text="Velocímetro")
+    speedometerLabelFrame.grid(
+        row=1, column=1, padx=10, pady=10, sticky='nsew')
+    speedometer = Label(speedometerLabelFrame, text="Conteúdo")
+    speedometer.pack(fill='both', expand='yes')
+
+
+def showButtons():
+    buttonsLabelFrame = LabelFrame(window, text="Botões")
+    buttonsLabelFrame.grid(row=2, column=0, padx=10,
+                           pady=10, sticky='nsew', columnspan=2)
+    buttons = Label(buttonsLabelFrame, text="Conteúdo")
+    buttons.pack(fill='both', expand='yes')
+
+
+def showMap():
+    mapLabelFrame = LabelFrame(window, text="Mapa")
+    mapLabelFrame.grid(row=0, column=2, rowspan=4,
+                       padx=10, pady=10, sticky='nsew')
+
+    latitude = None
+    longitude = None
+    intervalo = 2  # atualiza a cada 2 segundos
 
     # Função que mostra onde está a ISS, apenas para efeitos visuais
-    def atualizar_posicao(self):
-        response = requests.get('http://api.open-notify.org/iss-now.json')
-        data = json.loads(response.content)
-        self.latitude = float(data['iss_position']['latitude'])
-        self.longitude = float(data['iss_position']['longitude'])
+    def atualizar_posicao():
+
+        # Obtém os dados de latitude e longitude
+        latitude = float(data['latitude'])
+        longitude = float(data['longitude'])
 
         # remove o mapa antigo
-        for widget in self.frame6.winfo_children():
+        for widget in mapLabelFrame.winfo_children():
             widget.destroy()
 
         # cria um novo mapa com as novas coordenadas
-        self.showMap(self.latitude, self.longitude)
+        openMap(latitude, longitude)
 
-        # chama novamente a função atualizar_posicao() após 5 segundos
-        self.window.after(self.intervalo * 1000, self.atualizar_posicao)
+        # chama novamente a função atualizar_posicao() após n segundos
+        window.after(intervalo * 1000, atualizar_posicao)
 
     # Função que exibe o mapa na tela
-    def showMap(self, latitude, longitude):
+    def openMap(latitude, longitude):
         map_widget = tkintermapview.TkinterMapView(
-            self.frame6, width=400, height=1280)
+            mapLabelFrame, width=400, height=1280)
         map_widget.set_position(latitude, longitude)
         map_widget.pack(fill='both', expand=True)
-        self.frame6.columnconfigure(0, weight=1)
-        self.frame6.rowconfigure(0, weight=1)
+        mapLabelFrame.columnconfigure(0, weight=1)
+        mapLabelFrame.rowconfigure(0, weight=1)
 
         map_widget.set_zoom(10)
 
-    def showAltitude(self):
-        altura = [10, 200, 300, 400]
-        tempo = [1, 20, 90, 160]
-
-        # Cria um objeto Figure do Matplotlib
-        fig = Figure(figsize=(1, 1), dpi=100)
-        fig.suptitle('Altímetro')
-
-        # Adiciona um subplot ao objeto Figure
-        ax = fig.add_subplot(1, 1, 1)
-
-        # Plota um gráfico de linha simples
-        ax.plot(altura, tempo)
-
-        ax.set_xlabel('Tempo em segundos')
-        ax.set_ylabel('Altura em metros')
-
-        # Cria um widget FigureCanvasTkAgg
-        canvas = FigureCanvasTkAgg(fig, master=self.frame3)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side='top', fill='both', expand=True)
-        
-        # Gráfico para o Giroscópio
-        altura_giroscopio = [100, 200, 300, 400, 500]
-        tempo_giroscopio = [1, 20, 40, 80, 160]
-
-        # Cria um objeto Figure do Matplotlib
-        fig = Figure(figsize=(1, 1), dpi=100)
-        fig.suptitle('Giroscopio')
-
-        # Adiciona um subplot ao objeto Figure
-        ax = fig.add_subplot(1, 1, 1)
-
-        # Plota um gráfico de linha simples
-        ax.plot(altura_giroscopio, tempo_giroscopio)
-
-        ax.set_xlabel('Tempo em segundos')
-        ax.set_ylabel('Altura em metros')
-
-        # Cria um widget FigureCanvasTkAgg
-        canvas = FigureCanvasTkAgg(fig, master=self.frame2)
-        canvas.draw()
-        canvas.get_tk_widget().pack(side='top', fill='both', expand=True)
+    # Chama a função atualizar_posicao() após a definição
+    atualizar_posicao()
 
 
-# Cria a janela
-window = tk.Tk()
+showAccelerometer()
+showGyroscope()
+showSpeedometer()
+showAltimeter()
+showButtons()
+showMap()
 
-# Cria a aplicação
-app = Application(window)
-
-# Inicia o loop da aplicação
 window.mainloop()
