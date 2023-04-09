@@ -1,8 +1,10 @@
 from tkinter import *
 import tkintermapview
-from cmd.graphs.acelerometer.acelerometer import showAccelerometer
-from cmd.graphs.altimeter.altimeter import showAltimeter
-from cmd.graphs.data.data import getData
+from modules.graphs.acelerometer.acelerometer import showAccelerometer
+from modules.graphs.altimeter.altimeter import showAltimeter
+from modules.graphs.data.data import getData
+from modules.graphs.gyroscope.gyroscope import showGyroscope
+from modules.graphs.speedometer.speedometer import showSpeedometer
 
 data = getData()
 
@@ -17,23 +19,6 @@ window.columnconfigure(1, weight=1)
 window.rowconfigure(0, weight=1)
 window.rowconfigure(1, weight=1)
 window.rowconfigure(2, weight=1)
-
-
-
-
-def showGyroscope():
-    gyroscopeLabelFrame = LabelFrame(window, text="Giroscópio")
-    gyroscopeLabelFrame.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
-    gyroscope = Label(gyroscopeLabelFrame, text="Conteúdo")
-    gyroscope.pack(fill='both', expand='yes')
-
-
-def showSpeedometer():
-    speedometerLabelFrame = LabelFrame(window, text="Velocímetro")
-    speedometerLabelFrame.grid(
-        row=1, column=1, padx=10, pady=10, sticky='nsew')
-    speedometer = Label(speedometerLabelFrame, text="Conteúdo")
-    speedometer.pack(fill='both', expand='yes')
 
 
 def showButtons():
@@ -86,8 +71,8 @@ def showMap():
 
 
 showAccelerometer(window)
-showGyroscope()
-showSpeedometer()
+showGyroscope(window)
+showSpeedometer(window)
 showAltimeter(window)
 showButtons()
 showMap()
