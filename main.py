@@ -1,35 +1,10 @@
 from tkinter import *
-
 import tkintermapview
-import requests
-import json
-
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import matplotlib.pyplot as plt
-import numpy as np
-
-import datetime
-
-
-def getData():
-
-    # URL da API
-    url = "https://api.wheretheiss.at/v1/satellites/25544"
-
-    try:
-        # Faz a solicitação GET para a API
-        response = requests.get(url)
-
-        # Verifica se a resposta foi bem-sucedida (código de status 200)
-        if response.status_code == 200:
-            # Retorna os dados JSON da resposta
-            return response.json()
-        else:
-            print("Erro na solicitação da API:", response.status_code)
-
-    except requests.exceptions.RequestException as e:
-        print("Ocorreu um erro ao obter dados:", e)
-
+from modules.graphs.acelerometer.acelerometer import showAccelerometer
+from modules.graphs.altimeter.altimeter import showAltimeter
+from modules.graphs.data.data import getData
+from modules.graphs.gyroscope.gyroscope import showGyroscope
+from modules.graphs.speedometer.speedometer import showSpeedometer
 
 data = getData()
 
@@ -44,207 +19,6 @@ window.columnconfigure(1, weight=1)
 window.rowconfigure(0, weight=1)
 window.rowconfigure(1, weight=1)
 window.rowconfigure(2, weight=1)
-
-
-def showAccelerometer():
-    accelerometerLabelFrame = LabelFrame(window, text="Acelerômetro")
-    accelerometerLabelFrame.grid(
-        row=0, column=0, padx=10, pady=10, sticky='nsew')
-    # accelerometer = Label(accelerometerLabelFrame, text="Conteúdo")
-    # accelerometer.pack(fill='both', expand='yes')
-
-    # Criação do canvas para o gráfico
-    fig, ax = plt.subplots()
-    canvas = FigureCanvasTkAgg(fig, master=accelerometerLabelFrame)
-    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-    # Listas para armazenar os dados de altitude e timestamp
-    altitudes = []
-    timestamps = []
-
-    def calcular_tempo_execucao():
-        segundos = datetime.datetime.now()
-        return segundos
-
-    # Função para atualizar o gráfico
-    def update_graph():
-
-        nonlocal altitudes, timestamps  # Usa variáveis não locais
-
-        # Obtém os dados de altitude e timestamp
-        # data = getData()
-        altitude = float(data['altitude']) * 1000
-        timestamp = calcular_tempo_execucao()
-
-        # Adiciona os dados às listas
-        altitudes.append(altitude)
-        timestamps.append(timestamp)
-
-        # Atualiza os dados no gráfico
-        ax.clear()
-        ax.plot(timestamps, altitudes)
-        ax.set_xlabel('Tempo (em segundos)')
-        ax.set_ylabel('Aceleração (em m/s²)')
-        # ax.set_title('Aceleração em Tempo Real')
-
-        # Redesenha o gráfico
-        canvas.draw()
-
-        # Chama a função para atualizar o gráfico após intervalo de tempo
-        window.after(1000, update_graph)  # Chama novamente após 2 segundos
-
-    # Chama a função para atualizar o gráfico após a definição
-    update_graph()
-
-
-def showAltimeter():
-    speedometerLabelFrame = LabelFrame(window, text="Altímetro")
-    speedometerLabelFrame.grid(
-        row=0, column=1, padx=10, pady=10, sticky='nsew')
-
-    # Criação do canvas para o gráfico
-    fig, ax = plt.subplots()
-    canvas = FigureCanvasTkAgg(fig, master=speedometerLabelFrame)
-    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-    # Listas para armazenar os dados de altitude e timestamp
-    altitudes = []
-    timestamps = []
-
-    def calcular_tempo_execucao():
-        segundos = datetime.datetime.now()
-        return segundos
-
-    # Função para atualizar o gráfico
-    def update_graph():
-
-        nonlocal altitudes, timestamps  # Usa variáveis não locais
-
-        # Obtém os dados de altitude e timestamp
-        # data = getData()
-        altitude = float(data['altitude']) * 1000
-        timestamp = calcular_tempo_execucao()
-
-        # Adiciona os dados às listas
-        altitudes.append(altitude)
-        timestamps.append(timestamp)
-
-        # Atualiza os dados no gráfico
-        ax.clear()
-        ax.plot(timestamps, altitudes)
-        ax.set_xlabel('Tempo (em segundos)')
-        ax.set_ylabel('Altitude (em metros)')
-        # ax.set_title('Altitude em Tempo Real')
-
-        # Redesenha o gráfico
-        canvas.draw()
-
-        # Chama a função para atualizar o gráfico após intervalo de tempo
-        window.after(1000, update_graph)  # Chama novamente após 2 segundos
-
-    # Chama a função para atualizar o gráfico após a definição
-    update_graph()
-
-
-def showGyroscope():
-    gyroscopeLabelFrame = LabelFrame(window, text="Giroscópio")
-    gyroscopeLabelFrame.grid(row=1, column=0, padx=10, pady=10, sticky='nsew')
-    # gyroscope = Label(gyroscopeLabelFrame, text="Conteúdo")
-    # gyroscope.pack(fill='both', expand='yes')
-
-    # Criação do canvas para o gráfico
-    fig, ax = plt.subplots()
-    canvas = FigureCanvasTkAgg(fig, master=gyroscopeLabelFrame)
-    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-    # Listas para armazenar os dados de altitude e timestamp
-    altitudes = []
-    timestamps = []
-
-    def calcular_tempo_execucao():
-        segundos = datetime.datetime.now()
-        return segundos
-
-    # Função para atualizar o gráfico
-    def update_graph():
-
-        nonlocal altitudes, timestamps  # Usa variáveis não locais
-
-        # Obtém os dados de altitude e timestamp
-        # data = getData()
-        altitude = float(data['altitude']) * 1000
-        timestamp = calcular_tempo_execucao()
-
-        # Adiciona os dados às listas
-        altitudes.append(altitude)
-        timestamps.append(timestamp)
-
-        # Atualiza os dados no gráfico
-        ax.clear()
-        ax.plot(timestamps, altitudes)
-        ax.set_xlabel('Tempo (em segundos)')
-        ax.set_ylabel('Altitude (em metros)')
-        # ax.set_title('Giroscópio em Tempo Real')
-
-        # Redesenha o gráfico
-        canvas.draw()
-
-        # Chama a função para atualizar o gráfico após intervalo de tempo
-        window.after(1000, update_graph)  # Chama novamente após 2 segundos
-
-    # Chama a função para atualizar o gráfico após a definição
-    update_graph()
-
-
-def showSpeedometer():
-    speedometerLabelFrame = LabelFrame(window, text="Velocímetro")
-    speedometerLabelFrame.grid(
-        row=1, column=1, padx=10, pady=10, sticky='nsew')
-    # speedometer = Label(speedometerLabelFrame, text="Conteúdo")
-    # speedometer.pack(fill='both', expand='yes')
-
-    # Criação do canvas para o gráfico
-    fig, ax = plt.subplots()
-    canvas = FigureCanvasTkAgg(fig, master=speedometerLabelFrame)
-    canvas.get_tk_widget().pack(side=TOP, fill=BOTH, expand=1)
-
-    # Listas para armazenar os dados de altitude e timestamp
-    altitudes = []
-    timestamps = []
-
-    def calcular_tempo_execucao():
-        segundos = datetime.datetime.now()
-        return segundos
-
-    # Função para atualizar o gráfico
-    def update_graph():
-
-        nonlocal altitudes, timestamps  # Usa variáveis não locais
-
-        # Obtém os dados de altitude e timestamp
-        # data = getData()
-        altitude = float(data['altitude']) * 1000
-        timestamp = calcular_tempo_execucao()
-
-        # Adiciona os dados às listas
-        altitudes.append(altitude)
-        timestamps.append(timestamp)
-
-        # Atualiza os dados no gráfico
-        ax.clear()
-        ax.plot(timestamps, altitudes)
-        ax.set_xlabel('Tempo (em segundos)')
-        ax.set_ylabel('Velocidade (em m/s)')
-        # ax.set_title('Velocidade em Tempo Real')
-
-        # Redesenha o gráfico
-        canvas.draw()
-
-        # Chama a função para atualizar o gráfico após intervalo de tempo
-        window.after(1000, update_graph)  # Chama novamente após 2 segundos
-
-    # Chama a função para atualizar o gráfico após a definição
-    update_graph()
 
 
 def showButtons():
@@ -296,10 +70,10 @@ def showMap():
     atualizar_posicao()
 
 
-showAccelerometer()
-showGyroscope()
-showSpeedometer()
-showAltimeter()
+showAccelerometer(window)
+showGyroscope(window)
+showSpeedometer(window)
+showAltimeter(window)
 showButtons()
 showMap()
 
